@@ -180,3 +180,10 @@ export function alertMessage(trigger: CheckAlert['trigger'], fromLabel: string):
   const lead = trigger === '자리이동' ? `${fromLabel}에서 일어나셨네요.` : `${fromLabel}에서 나왔네요.`
   return `${lead}\n다 챙겼는지 한 번만 볼까요?`
 }
+
+/** 물건을 챙겼다고 답한 순간: "연세대학교 · 도서관 3층 열람실에서 일어날 때" / "카페 온기에서 나올 때" */
+export function checkMomentLabel(trigger: CheckAlert['trigger'], ends: AlertEndpoints): string {
+  return trigger === '자리이동'
+    ? `${ends.fromStay.placeName} · ${ends.fromLabel}에서 일어날 때`
+    : `${ends.fromLabel}에서 나올 때`
+}
