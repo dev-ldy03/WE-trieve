@@ -27,7 +27,7 @@ export default function BottomSheet({ open, title, onClose, children }: BottomSh
         className="absolute bottom-0 left-1/2 max-h-[85dvh] w-full max-w-[430px] -translate-x-1/2 animate-sheet-up overflow-y-auto rounded-t-3xl bg-cream px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+24px)] shadow-xl"
       >
         <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-peach" />
-        <h2 className="mb-4 text-lg leading-snug font-bold">{title}</h2>
+        <h2 className="mb-4 text-lg leading-snug font-bold whitespace-pre-line">{title}</h2>
         {children}
       </div>
     </div>

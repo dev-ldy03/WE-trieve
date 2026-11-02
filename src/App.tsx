@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import CheckSheet from './components/CheckSheet.tsx'
 import TabBar from './components/TabBar.tsx'
 import Toast from './components/Toast.tsx'
 import { AppProvider } from './context/AppContext.tsx'
@@ -13,6 +14,7 @@ export default function App() {
         <TabBar />
       </div>
       <Toast />
+      <CheckSheet />
     </AppProvider>
   )
 }

@@ -30,7 +30,7 @@ export default function Toast() {
       >
         <span className="text-2xl">🧸</span>
         <span className="flex-1">
-          <span className="block text-sm leading-snug font-semibold">{toast.message}</span>
+          <span className="block text-sm leading-snug font-semibold whitespace-pre-line">{toast.message}</span>
           {toast.alertId && (
             <span className="mt-1 block text-xs text-coral-deep">눌러서 확인하기 →</span>
           )}

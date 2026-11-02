@@ -61,3 +61,30 @@ body {
   background: none;
   border: none;
 }
+
+/* 두고 온 장소 강조 */
+.lost-spot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  background: var(--color-rose-deep);
+  border: 3px solid #fff;
+  font-size: 20px;
+  box-shadow: 0 2px 8px rgb(211 95 111 / 0.4);
+}
+.lost-spot::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 3px solid var(--color-rose-deep);
+  animation: lost-pulse 1.6s ease-out infinite;
+}
+@keyframes lost-pulse {
+  from { transform: scale(1); opacity: 0.8; }
+  to { transform: scale(2.2); opacity: 0; }
+}

@@ -59,3 +59,14 @@ export function startOfDay(ts: number): number {
   const d = new Date(ts)
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
 }
+
+/** 받침에 맞는 조사를 붙인다. josa('도서관', '을/를') → '도서관을', josa('식당', '으로/로') → '식당으로' */
+export function josa(word: string, pair: '을/를' | '이/가' | '은/는' | '으로/로'): string {
+  const [withBatchim, without] = pair.split('/')
+  const code = word.charCodeAt(word.length - 1) - 0xac00
+  if (code < 0 || code > 11171) return `${word}${without}`
+  const batchim = code % 28
+  // 'ㄹ' 받침은 '로'를 쓴다
+  const useBatchim = batchim !== 0 && !(pair === '으로/로' && batchim === 8)
+  return `${word}${useBatchim ? withBatchim : without}`
+}

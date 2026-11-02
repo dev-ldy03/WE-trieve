@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { initialAlerts } from '../data/alerts.ts'
 import { initialItems } from '../data/items.ts'
-import { initialNearLosses } from '../data/nearLosses.ts'
+import { ALERT_DELAY_MS, initialNearLosses } from '../data/nearLosses.ts'
 import { placeNameAt } from '../data/places.ts'
 import { historyPoints, todaySimulation } from '../data/routine.ts'
 import { detectStays } from '../lib/stay.ts'
@@ -24,12 +24,13 @@ interface AppContextValue {
   openAlertId: string | null
   /** 데모 속 현재 시각 — 오늘 동선의 끝에서 시작해 이동 시뮬레이션으로 흘러간다 */
   now: number
+  /** 이동 시뮬레이션 진행 단계 (todaySimulation.stops 인덱스) */
+  simStep: number
 
   addItem: (name: string, emoji: string) => void
   removeItem: (itemId: string) => void
-  appendPoints: (points: LocationPoint[]) => void
-  advanceClock: (to: number) => void
-  addAlert: (alert: CheckAlert) => void
+  /** 시뮬레이션 이동을 기록하고 새 장소에 대한 챙김 확인 알림을 띄운다 */
+  completeMove: (newPoints: LocationPoint[]) => void
   respond: (alertId: string, itemId: string, status: CheckStatus) => void
   markRecovered: (nearLossId: string) => void
   showToast: (message: string, alertId?: string) => void
@@ -48,6 +49,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<ToastState | null>(null)
   const [openAlertId, setOpenAlertId] = useState<string | null>(null)
   const [now, setNow] = useState(todaySimulation.now)
+  const [simStep, setSimStep] = useState(0)
 
   const points = useMemo(() => [...historyPoints, ...extraPoints], [extraPoints])
   const stays = useMemo(() => detectStays(points, placeNameAt), [points])
@@ -64,17 +66,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((item) => item.id !== itemId))
   }, [])
 
-  const appendPoints = useCallback((newPoints: LocationPoint[]) => {
-    setExtraPoints((prev) => [...prev, ...newPoints])
-  }, [])
+  const completeMove = useCallback(
+    (newPoints: LocationPoint[]) => {
+      const nextStays = detectStays([...points, ...newPoints], placeNameAt)
+      const toStay = nextStays[nextStays.length - 1]
+      const fromStay = nextStays[nextStays.length - 2]
+      const alert: CheckAlert = {
+        id: `alert-${toStay.startAt}`,
+        fromStayId: fromStay.id,
+        toStayId: toStay.id,
+        createdAt: toStay.startAt + ALERT_DELAY_MS,
+        responses: items.map((item) => ({ itemId: item.id, status: '미응답' })),
+      }
 
-  const advanceClock = useCallback((to: number) => {
-    setNow((prev) => Math.max(prev, to))
-  }, [])
-
-  const addAlert = useCallback((alert: CheckAlert) => {
-    setAlerts((prev) => [...prev, alert])
-  }, [])
+      setExtraPoints((prev) => [...prev, ...newPoints])
+      setAlerts((prev) => [...prev, alert])
+      setNow(newPoints[newPoints.length - 1].timestamp)
+      setSimStep((step) => step + 1)
+      setToast({
+        id: Date.now(),
+        message: `${fromStay.placeName}에서 나왔네요.\n다 챙겼는지 한 번만 볼까요?`,
+        alertId: alert.id,
+      })
+    },
+    [points, items],
+  )
 
   const respond = useCallback(
     (alertId: string, itemId: string, status: CheckStatus) => {
@@ -145,11 +161,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     toast,
     openAlertId,
     now,
+    simStep,
     addItem,
     removeItem,
-    appendPoints,
-    advanceClock,
-    addAlert,
+    completeMove,
     respond,
     markRecovered,
     showToast,

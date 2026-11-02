@@ -188,11 +188,40 @@ const todayCutoff = (() => {
   return Math.max(arriveAt + 10 * MINUTE, Math.min(arriveAt + 20 * MINUTE, leaveAt - MINUTE))
 })()
 
-/** 이동 시뮬레이션에 쓸 오늘의 남은 일정 */
+/** 이동 시뮬레이션에 쓸 오늘의 일정. stops[0]이 지금 머무는 곳이다. */
 export const todaySimulation = {
-  currentPlaceId: todayPlan[currentIndex].placeId,
-  remaining: todayPlan.slice(currentIndex + 1),
+  stops: todayPlan.slice(currentIndex),
   now: todayCutoff,
+}
+
+/** 알림은 새 장소에서 5분 머문 뒤 뜬다 (시뮬레이션에서는 바로 5분을 채운다) */
+const ARRIVAL_STAY_MIN = 5
+
+/**
+ * 시뮬레이션 한 걸음: 지금 장소에서 계획한 시각까지 머문 뒤 다음 장소로 걸어가 5분 머문다.
+ * walk는 지도 애니메이션용 경로(출발·도착 지점 포함)다.
+ */
+export function buildSimulatedMove(step: number, now: number) {
+  const rand = seededRandom(now / MINUTE + step)
+  const from = todaySimulation.stops[step]
+  const to = todaySimulation.stops[step + 1]
+  const departAt = Math.max(now, atTime(todayStart, from.until))
+
+  const waiting = departAt > now ? stayPoints(from.placeId, now + STAY_SAMPLE_MIN * MINUTE, departAt, rand) : []
+  const walk = walkPoints(from.placeId, to.placeId, departAt, rand)
+  const arrival = stayPoints(to.placeId, walk.arriveAt, walk.arriveAt + ARRIVAL_STAY_MIN * MINUTE, rand)
+
+  const fromPlace = placeById[from.placeId]
+  const toPlace = placeById[to.placeId]
+  return {
+    toPlaceId: to.placeId,
+    points: [...waiting, ...walk.points, ...arrival],
+    walk: [
+      { lat: fromPlace.lat, lng: fromPlace.lng, timestamp: departAt },
+      ...walk.points,
+      { lat: toPlace.lat, lng: toPlace.lng, timestamp: walk.arriveAt },
+    ],
+  }
 }
 
 // ---- 최근 30일 동선 ----

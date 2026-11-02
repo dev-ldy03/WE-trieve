@@ -1,15 +1,22 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Card from '../components/Card.tsx'
-import MapView from '../components/MapView.tsx'
+import MapView, { type LostSpot } from '../components/MapView.tsx'
 import { useApp } from '../context/AppContext.tsx'
-import { HISTORY_DAYS } from '../data/routine.ts'
+import { placeById } from '../data/places.ts'
+import { buildSimulatedMove, HISTORY_DAYS, todaySimulation } from '../data/routine.ts'
 import { pathDistance } from '../lib/distance.ts'
-import { formatDate, formatDistance, startOfDay } from '../lib/format.ts'
+import { formatDate, formatDistance, josa, startOfDay } from '../lib/format.ts'
 
 const DAY = 24 * 60 * 60 * 1000
+const MOVE_ANIMATION_MS = 3000
+
+type Move = ReturnType<typeof buildSimulatedMove>
 
 export default function MapHome() {
-  const { points, stays, now } = useApp()
+  const { points, stays, now, simStep, completeMove, items, nearLosses, stayById, markRecovered } =
+    useApp()
+  const [move, setMove] = useState<Move | null>(null)
+  const [progress, setProgress] = useState(0)
   const today = startOfDay(now)
   const firstDay = today - (HISTORY_DAYS - 1) * DAY
   const [selectedDay, setSelectedDay] = useState(today)
@@ -25,6 +32,47 @@ export default function MapHome() {
   )
   const distance = pathDistance(dayPoints)
   const placeCount = new Set(dayStays.map((s) => s.placeName)).size
+
+  // 아직 찾지 못한 물건이 있는 장소
+  const lostSpots = useMemo(() => {
+    const itemById = new Map(items.map((item) => [item.id, item]))
+    const spots = new Map<string, LostSpot>()
+    for (const nl of nearLosses) {
+      const item = itemById.get(nl.itemId)
+      const stay = stayById.get(nl.stayId)
+      if (nl.recoveredAt !== null || !item || !stay) continue
+      const spot = spots.get(stay.id) ?? { stay, items: [] }
+      spot.items.push({ nearLossId: nl.id, label: `${item.emoji} ${item.name}` })
+      spots.set(stay.id, spot)
+    }
+    return [...spots.values()]
+  }, [items, nearLosses, stayById])
+
+  const nextStop = todaySimulation.stops[simStep + 1]
+
+  const startMove = () => {
+    setSelectedDay(today)
+    setProgress(0)
+    setMove(buildSimulatedMove(simStep, now))
+  }
+
+  useEffect(() => {
+    if (!move) return
+    let frame = 0
+    const startedAt = performance.now()
+    const tick = (time: number) => {
+      const p = Math.min(1, (time - startedAt) / MOVE_ANIMATION_MS)
+      setProgress(p)
+      if (p < 1) {
+        frame = requestAnimationFrame(tick)
+      } else {
+        completeMove(move.points)
+        setMove(null)
+      }
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [move, completeMove])
 
   const moveDay = (offset: number) =>
     setSelectedDay((d) => Math.min(today, Math.max(firstDay, d + offset * DAY)))
@@ -80,8 +128,34 @@ export default function MapHome() {
         </Card>
       </div>
 
-      <MapView path={dayPoints} stays={dayStays} className="h-[380px]" />
+      <MapView
+        path={dayPoints}
+        stays={dayStays}
+        movingRoute={move?.walk}
+        movingProgress={progress}
+        lostSpots={lostSpots}
+        onRecover={markRecovered}
+        className="h-[380px]"
+      />
       <p className="text-center text-xs text-ink-soft">마커를 누르면 머문 시간을 볼 수 있어요</p>
+
+      <button
+        type="button"
+        onClick={startMove}
+        disabled={!nextStop || move !== null}
+        className="w-full rounded-full bg-coral-deep py-3.5 font-semibold text-white shadow-md transition active:scale-[0.98] disabled:bg-peach disabled:text-ink-soft disabled:shadow-none"
+      >
+        {move
+          ? `${josa(placeById[move.toPlaceId].name, '으로/로')} 이동 중이에요…`
+          : nextStop
+            ? '🚶 이동 시뮬레이션'
+            : '오늘 일정은 여기까지예요. 푹 쉬어요 🌙'}
+      </button>
+      {nextStop && !move && (
+        <p className="-mt-2 text-center text-xs text-ink-soft">
+          다음 장소: {placeById[nextStop.placeId].name}
+        </p>
+      )}
     </section>
   )
 }
