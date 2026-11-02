@@ -1,6 +1,5 @@
 import { Pressable, Text, View } from 'react-native'
-
-export type Period = 'day' | 'week' | 'month'
+import type { Period } from '@/lib/analytics'
 
 const options: { value: Period; label: string }[] = [
   { value: 'day', label: '하루' },
