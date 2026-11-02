@@ -5,6 +5,7 @@ import Badge, { type BadgeTone } from '@/components/Badge'
 import Card from '@/components/Card'
 import { useApp } from '@/context/AppContext'
 import { dateKey, formatDate, formatTime } from '@/lib/format'
+import colors from '@/theme/colors.json'
 import type { CheckAlert } from '@/types'
 
 type Summary = { label: string; tone: BadgeTone }
@@ -35,7 +36,7 @@ export default function Alerts() {
 
   return (
     <SectionList
-      className="flex-1 bg-cream"
+      style={{ flex: 1, backgroundColor: colors.cream }}
       contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 32, paddingHorizontal: 20 }}
       sections={sections}
       keyExtractor={(alert) => alert.id}

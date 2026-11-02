@@ -20,7 +20,7 @@ import {
 import { formatDistance, formatDuration } from '@/lib/format'
 import colors from '@/theme/colors.json'
 
-const PERIOD_LABEL: Record<Period, string> = { day: '오늘', week: '이번 주', month: '이번 달' }
+const PERIOD_LABEL: Record<Period, string> = { day: '오늘', week: '최근 7일', month: '최근 30일' }
 const BAR_COLORS = [colors.coralDeep, colors.coral, '#f7b9a5', colors.peach, '#ffe4d1']
 
 export default function MyPage() {
