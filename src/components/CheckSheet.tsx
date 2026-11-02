@@ -62,7 +62,11 @@ export default function CheckSheet() {
               </div>
 
               {status === '두고옴' && nearLoss && (
-                <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-rose/40 px-3 py-2 text-xs">
+                <div
+                  className={`mt-2 flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs ${
+                    nearLoss.recoveredAt === null ? 'bg-rose/40' : 'bg-mint/40'
+                  }`}
+                >
                   {nearLoss.recoveredAt === null ? (
                     <>
                       <span className="text-rose-deep">

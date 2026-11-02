@@ -148,7 +148,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const dismissToast = useCallback(() => setToast(null), [])
-  const openSheet = useCallback((alertId: string) => setOpenAlertId(alertId), [])
+  const openSheet = useCallback((alertId: string) => {
+    setOpenAlertId(alertId)
+    setToast(null)
+  }, [])
   const closeSheet = useCallback(() => setOpenAlertId(null), [])
 
   const value: AppContextValue = {
