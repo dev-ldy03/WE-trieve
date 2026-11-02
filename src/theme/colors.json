@@ -1,4 +1,25 @@
 {
+  "ink": "#20252b",
+  "muted": "#858b94",
+  "faint": "#afb3bc",
+  "accent": "#4266ed",
+  "accentSoft": "#eef2ff",
+  "accentTint": "#f4f6fc",
+  "paper": "#ffffff",
+  "surface": "#f7f8fa",
+  "line": "#eceef1",
+  "lineSoft": "#f0f1f3",
+  "backdrop": "#f0f1f3",
+  "frameBorder": "#e4e6eb",
+  "ok": "#449576",
+  "okSoft": "#edf5f0",
+  "okText": "#43866b",
+  "warn": "#c18845",
+  "warnSoft": "#faf2e6",
+  "warnText": "#b48347",
+  "dot": "#de8843",
+  "navInactive": "#97a09a",
+
   "cream": "#fff8f0",
   "peach": "#ffd8be",
   "coral": "#f4a28c",
@@ -8,6 +29,5 @@
   "rose": "#ffd1d6",
   "roseDeep": "#d35f6f",
   "butter": "#fff1c1",
-  "ink": "#4a3f3a",
   "inkSoft": "#8a7c75"
 }

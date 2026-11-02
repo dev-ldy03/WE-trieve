@@ -31,6 +31,8 @@ export interface Stay {
   spots: Spot[]
 }
 
+export type ItemKind = 'wallet' | 'buds' | 'keys' | 'charger'
+
 export interface Item {
   id: string
   name: string
