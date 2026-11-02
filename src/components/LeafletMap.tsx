@@ -1,10 +1,17 @@
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useMemo } from 'react'
-import { Circle, MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
 import { findPlaceAt } from '@/data/places'
 import colors from '@/theme/colors.json'
-import { groupByPlace, partialRoute, type MapViewProps } from './mapTypes'
+import {
+  groupByPlace,
+  LOST_MARK_BORDER_WIDTH,
+  LOST_MARK_FILL,
+  LOST_MARK_SIZE,
+  partialRoute,
+  type MapViewProps,
+} from './mapTypes'
 import './LeafletMap.css'
 
 /**
@@ -35,6 +42,14 @@ function pinIcon(emoji: string, size: number, selected = false, border = colors.
   }
   return icon
 }
+
+/** 앱과 같은 두고 온 곳 표시: 화면 기준 고정 크기 분홍 원 */
+const lostIcon = L.divIcon({
+  className: 'wt-pin',
+  html: `<div style="box-sizing:border-box;width:${LOST_MARK_SIZE}px;height:${LOST_MARK_SIZE}px;border-radius:9999px;background:${LOST_MARK_FILL};border:${LOST_MARK_BORDER_WIDTH}px solid ${colors.roseDeep}"></div>`,
+  iconSize: [LOST_MARK_SIZE, LOST_MARK_SIZE],
+  iconAnchor: [LOST_MARK_SIZE / 2, LOST_MARK_SIZE / 2],
+})
 
 /** 경로·마커·이동 경로가 모두 보이도록 화면을 맞춘다 */
 function FitBounds({ coords }: { coords: [number, number][] }) {
@@ -119,11 +134,13 @@ export default function MapView({
         ))}
 
         {lostMarks.map((mark) => (
-          <Circle
-            key={`lost-area-${mark.key}`}
-            center={[mark.lat, mark.lng]}
-            radius={45}
-            pathOptions={{ color: colors.roseDeep, weight: 2, fillColor: 'rgb(211, 95, 111)', fillOpacity: 0.25 }}
+          <Marker
+            key={`lost-${mark.key}`}
+            position={[mark.lat, mark.lng]}
+            icon={lostIcon}
+            zIndexOffset={500}
+            eventHandlers={{ click: () => onSelectPlace?.(mark.placeName) }}
+            title={`두고 온 곳: ${mark.label}`}
           />
         ))}
 

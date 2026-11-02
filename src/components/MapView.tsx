@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Text, View } from 'react-native'
-import RNMapView, { Circle, Marker, Polyline } from 'react-native-maps'
+import RNMapView, { Marker, Polyline } from 'react-native-maps'
 import { findPlaceAt } from '@/data/places'
 import colors from '@/theme/colors.json'
-import { groupByPlace, partialRoute, type MapViewProps } from './mapTypes'
+import {
+  groupByPlace,
+  LOST_MARK_BORDER_WIDTH,
+  LOST_MARK_FILL,
+  LOST_MARK_SIZE,
+  partialRoute,
+  type MapViewProps,
+} from './mapTypes'
 
 const SINCHON = { latitude: 37.5585, longitude: 126.9375, latitudeDelta: 0.014, longitudeDelta: 0.014 }
 const EDGE = { top: 48, right: 48, bottom: 48, left: 48 }
@@ -93,14 +100,24 @@ export default function MapView({
         ))}
 
         {lostMarks.map((mark) => (
-          <Circle
-            key={`lost-area-${mark.key}`}
-            center={{ latitude: mark.lat, longitude: mark.lng }}
-            radius={45}
-            fillColor="rgba(211, 95, 111, 0.25)"
-            strokeColor={colors.roseDeep}
-            strokeWidth={2}
-          />
+          <Marker
+            key={`lost-${mark.key}`}
+            coordinate={{ latitude: mark.lat, longitude: mark.lng }}
+            onPress={() => onSelectPlace?.(mark.placeName)}
+            anchor={{ x: 0.5, y: 0.5 }}
+            zIndex={5}
+          >
+            <View
+              style={{
+                width: LOST_MARK_SIZE,
+                height: LOST_MARK_SIZE,
+                borderRadius: LOST_MARK_SIZE / 2,
+                backgroundColor: LOST_MARK_FILL,
+                borderWidth: LOST_MARK_BORDER_WIDTH,
+                borderColor: colors.roseDeep,
+              }}
+            />
+          </Marker>
         ))}
 
         {moving && (

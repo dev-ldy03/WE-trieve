@@ -1,4 +1,3 @@
-import Head from 'expo-router/head'
 import { useSyncExternalStore, type ReactNode } from 'react'
 import { View } from 'react-native'
 import colors from '@/theme/colors.json'
@@ -19,15 +18,6 @@ export default function WebPhoneFrame({ children }: { children: ReactNode }) {
   )
   return (
     <View style={{ flex: 1, backgroundColor: colors.peach }}>
-      <Head>
-        <html lang="ko" />
-        <title>WE:triever</title>
-        <meta
-          name="description"
-          content="두고 오지 않게, 우리가 같이 챙길게요. 하루 동선을 기록하고 소지품을 챙겼는지 알려 주는 WE:triever 프로토타입"
-        />
-        <meta name="theme-color" content={colors.peach} />
-      </Head>
       <View
         style={{
           flex: 1,

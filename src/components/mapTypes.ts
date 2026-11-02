@@ -4,9 +4,18 @@ import type { LocationPoint, Stay } from '@/types'
 export interface LostMark {
   key: string
   label: string
+  placeName: string
   lat: number
   lng: number
 }
+
+/**
+ * 두고 온 곳 표시: 지도 확대와 상관없이 화면 기준 고정 크기의 분홍 원.
+ * 핀(36px)보다 조금 크게 핀 위에 겹쳐, 이모지는 비쳐 보이고 테두리는 핀 밖으로 드러난다.
+ */
+export const LOST_MARK_SIZE = 44
+export const LOST_MARK_FILL = 'rgba(211, 95, 111, 0.28)'
+export const LOST_MARK_BORDER_WIDTH = 3
 
 /** 한 달 보기처럼 경로 대신 자주 간 장소만 크기로 보여줄 때 */
 export interface FrequentPlace {

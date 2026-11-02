@@ -68,7 +68,7 @@ export default function MapHome() {
     const marks = new Map<string, LostMark>()
     for (const e of lostEntries) {
       const label = placeKey(e.stay.placeName, e.spotName)
-      marks.set(label, { key: label, label, lat: e.stay.lat, lng: e.stay.lng })
+      marks.set(label, { key: label, label, placeName: e.stay.placeName, lat: e.stay.lat, lng: e.stay.lng })
     }
     return [...marks.values()]
   }, [lostEntries])
