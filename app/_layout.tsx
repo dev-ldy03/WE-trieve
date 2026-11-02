@@ -2,11 +2,12 @@ import '../global.css'
 
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
+import { AppProvider } from '@/context/AppContext'
 import colors from '@/theme/colors.json'
 
 export default function RootLayout() {
   return (
-    <>
+    <AppProvider>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -20,6 +21,6 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="items/[id]" options={{ title: '물건 상세', headerBackTitle: '내 물건' }} />
       </Stack>
-    </>
+    </AppProvider>
   )
 }
