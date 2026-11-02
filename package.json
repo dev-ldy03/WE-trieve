@@ -41,7 +41,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "share:html": "node scripts/build-share-html.mjs"
   },
   "private": true
 }

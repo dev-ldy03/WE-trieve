@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# 팀원 공유용 HTML (npm run share:html로 생성)
+/share
