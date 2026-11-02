@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+
+  --color-cream: #fff8f0;
+  --color-peach: #ffd8be;
+  --color-coral: #f4a28c;
+  --color-coral-deep: #e07a5f;
+  --color-mint: #bfe8d4;
+  --color-mint-deep: #3f9b74;
+  --color-rose: #ffd1d6;
+  --color-rose-deep: #d35f6f;
+  --color-butter: #fff1c1;
+  --color-ink: #4a3f3a;
+  --color-ink-soft: #8a7c75;
+}
+
+body {
+  @apply bg-peach/40 font-sans text-ink antialiased;
+}
