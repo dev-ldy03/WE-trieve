@@ -26,7 +26,11 @@ export default function Support() {
   const [bundle, setBundle] = useState<Set<string>>(() => new Set(protectedItems.map((i) => i.id)))
   // 신청서
   const [draft, setDraft] = useState<Claim | null>(null)
-  const [form, setForm] = useState({ itemId: protectedItems[0]?.id ?? '', date: dateKey(now), place: '', story: '' })
+  // 장소는 그 물건을 마지막으로 챙긴(또는 두고 온) 곳으로 미리 채운다
+  const [form, setForm] = useState(() => {
+    const first = protectedItems[0]?.id ?? ''
+    return { itemId: first, date: dateKey(now), place: first ? (statusOf(first).place ?? '') : '', story: '' }
+  })
 
   const back = (label: string, to: SupportView) => (
     <Pressable onPress={() => setView(to)} className="mb-4 flex-row items-center gap-1.5 self-start">
@@ -109,7 +113,7 @@ export default function Support() {
               key={i.id}
               label={i.name}
               active={form.itemId === i.id}
-              onPress={() => setForm({ ...form, itemId: i.id, place: form.place || statusOf(i.id).place || '' })}
+              onPress={() => setForm({ ...form, itemId: i.id, place: statusOf(i.id).place ?? form.place })}
             />
           ))}
         </View>
