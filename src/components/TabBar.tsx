@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom'
 
 const tabs = [
-  { to: '/', label: '홈', icon: '🏠' },
-  { to: '/alerts', label: '알림', icon: '🔔' },
-  { to: '/predict', label: 'AI 예측', icon: '🔮' },
-  { to: '/report', label: '분실 신고', icon: '📝' },
+  { to: '/', label: '지도', icon: '🗺️' },
+  { to: '/items', label: '내 물건', icon: '🎒' },
+  { to: '/alerts', label: '알림 기록', icon: '🔔' },
+  { to: '/my', label: '마이페이지', icon: '🙂' },
 ]
 
 export default function TabBar() {

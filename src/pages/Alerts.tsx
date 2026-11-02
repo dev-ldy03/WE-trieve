@@ -1,8 +1,8 @@
 export default function Alerts() {
   return (
     <section>
-      <h1 className="text-xl font-bold">두고 옴 알림</h1>
-      <p className="mt-2 text-sm text-ink-soft">혹시 두고 온 물건이 있으면 바로 알려드릴게요.</p>
+      <h1 className="text-xl font-bold">알림 기록</h1>
+      <p className="mt-2 text-sm text-ink-soft">그동안 챙김 확인 알림을 여기 모아둘게요.</p>
     </section>
   )
 }

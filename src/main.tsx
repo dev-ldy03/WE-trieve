@@ -4,21 +4,21 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import Alerts from './pages/Alerts.tsx'
-import Home from './pages/Home.tsx'
 import ItemDetail from './pages/ItemDetail.tsx'
-import Predict from './pages/Predict.tsx'
-import Report from './pages/Report.tsx'
+import Items from './pages/Items.tsx'
+import MapHome from './pages/MapHome.tsx'
+import MyPage from './pages/MyPage.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route element={<App />}>
-          <Route index element={<Home />} />
+          <Route index element={<MapHome />} />
+          <Route path="items" element={<Items />} />
           <Route path="items/:id" element={<ItemDetail />} />
           <Route path="alerts" element={<Alerts />} />
-          <Route path="predict" element={<Predict />} />
-          <Route path="report" element={<Report />} />
+          <Route path="my" element={<MyPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
