@@ -16,11 +16,11 @@ interface LossPattern {
   count: number
 }
 
-// 특정 장소·자리·요일에 몰리도록: 화요일 열람실 에어팟, 카페 온기 가디건, 도서관 우산
+// 특정 장소·자리·요일에 몰리도록: 화요일 열람실 에어팟, 카페 온기 충전기, 도서관 집 열쇠
 const patterns: LossPattern[] = [
   { itemId: 'airpods', placeName: '연세대학교', spotName: '도서관 3층 열람실', weekday: 2, count: 3 },
-  { itemId: 'cardigan', placeName: '카페 온기', count: 2 },
-  { itemId: 'umbrella', placeName: '신촌 도서관', count: 2 },
+  { itemId: 'charger', placeName: '카페 온기', count: 2 },
+  { itemId: 'keys', placeName: '신촌 도서관', count: 2 },
 ]
 
 /** 떠난 곳과, 다음 곳에 도착한 시각 */

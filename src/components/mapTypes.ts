@@ -14,8 +14,15 @@ export interface LostMark {
  * 핀(36px)보다 조금 크게 핀 위에 겹쳐, 이모지는 비쳐 보이고 테두리는 핀 밖으로 드러난다.
  */
 export const LOST_MARK_SIZE = 44
-export const LOST_MARK_FILL = 'rgba(211, 95, 111, 0.28)'
+export const LOST_MARK_FILL = 'rgba(222, 136, 67, 0.25)'
+export const LOST_MARK_BORDER = '#de8843'
 export const LOST_MARK_BORDER_WIDTH = 3
+
+/** 레퍼런스 동선 지도 색: 경로 선, 핀, 선택한 핀 */
+export const MAP_ROUTE = '#6482cc'
+export const MAP_PIN = '#90a3d2'
+export const MAP_PIN_ACTIVE = '#345de0'
+export const MAP_TRAIL = '#de8843'
 
 /** 한 달 보기처럼 경로 대신 자주 간 장소만 크기로 보여줄 때 */
 export interface FrequentPlace {
@@ -37,6 +44,8 @@ export interface MapViewProps {
   lostMarks?: LostMark[]
   selectedPlace?: string | null
   onSelectPlace?: (placeName: string) => void
+  /** 장소별 핀 글자 (예: 방문 순서 번호). 없으면 장소 순서대로 1, 2, 3… */
+  pinLabels?: Record<string, string>
   height?: number
 }
 

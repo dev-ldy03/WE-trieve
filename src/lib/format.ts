@@ -70,3 +70,13 @@ export function josa(word: string, pair: '을/를' | '이/가' | '은/는' | '�
   const useBatchim = batchim !== 0 && !(pair === '으로/로' && batchim === 8)
   return `${word}${useBatchim ? withBatchim : without}`
 }
+
+/** 방금 / 12분 전 / 3시간 전 / 어제 / 4일 전 */
+export function timeAgo(ts: number, now: number): string {
+  const min = Math.max(0, Math.round((now - ts) / 60000))
+  if (min < 1) return '방금'
+  if (min < 60) return `${min}분 전`
+  if (startOfDay(ts) === startOfDay(now)) return `${Math.floor(min / 60)}시간 전`
+  const days = Math.round((startOfDay(now) - startOfDay(ts)) / 86400000)
+  return days === 1 ? '어제' : `${days}일 전`
+}

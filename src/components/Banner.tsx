@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Animated, Pressable, Text, View } from 'react-native'
+import { Animated, Platform, Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useApp } from '@/context/AppContext'
-import { softShadow } from '@/theme/shadow'
+import colors from '@/theme/colors.json'
+import Icon from './Icon'
 
 const AUTO_DISMISS_MS = 6000
 
@@ -15,33 +16,36 @@ export default function Banner() {
   useEffect(() => {
     if (!banner) return
     translateY.setValue(-200)
-    Animated.spring(translateY, { toValue: 0, useNativeDriver: true, bounciness: 6 }).start()
+    Animated.spring(translateY, { toValue: 0, useNativeDriver: Platform.OS !== 'web', bounciness: 4 }).start()
     const timer = setTimeout(dismissBanner, AUTO_DISMISS_MS)
     return () => clearTimeout(timer)
   }, [banner, dismissBanner, translateY])
 
   if (!banner) return null
 
-  const handlePress = () => {
-    if (banner.alertId) openSheet(banner.alertId)
-    else dismissBanner()
-  }
-
   return (
     <Animated.View
       pointerEvents="box-none"
       style={{ position: 'absolute', left: 0, right: 0, top: 0, zIndex: 100, elevation: 100, transform: [{ translateY }] }}
     >
-      <View style={{ paddingTop: insets.top + 8 }} className="px-4" pointerEvents="box-none">
+      <View style={{ paddingTop: insets.top + 12 }} className="px-4" pointerEvents="box-none">
         <Pressable
-          onPress={handlePress}
-          className="flex-row items-start gap-3 rounded-2xl border border-peach bg-white p-4 active:opacity-90"
-          style={softShadow}
+          onPress={() => (banner.alertId ? openSheet(banner.alertId) : dismissBanner())}
+          className="flex-row items-start gap-3 rounded-[14px] border border-line bg-paper p-4 active:opacity-90"
+          style={{ shadowColor: '#17243a', shadowOpacity: 0.12, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 6 }}
         >
-          <Text className="text-2xl">🧸</Text>
+          <View className="h-9 w-9 items-center justify-center rounded-full bg-accent-soft">
+            <Icon name="bell" size={18} color={colors.accent} />
+          </View>
           <View className="flex-1">
-            <Text className="text-sm font-semibold leading-5 text-ink">{banner.message}</Text>
-            {banner.alertId && <Text className="mt-1 text-xs text-coral-deep">눌러서 확인하기 →</Text>}
+            <Text className="font-semibold text-ink" style={{ fontSize: 13, lineHeight: 19 }}>
+              {banner.message}
+            </Text>
+            {banner.alertId && (
+              <Text className="mt-1 text-accent" style={{ fontSize: 12 }}>
+                눌러서 확인하기
+              </Text>
+            )}
           </View>
         </Pressable>
       </View>

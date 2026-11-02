@@ -2,13 +2,17 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useMemo } from 'react'
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
-import { findPlaceAt } from '@/data/places'
 import colors from '@/theme/colors.json'
 import {
   groupByPlace,
+  LOST_MARK_BORDER,
   LOST_MARK_BORDER_WIDTH,
   LOST_MARK_FILL,
   LOST_MARK_SIZE,
+  MAP_PIN,
+  MAP_PIN_ACTIVE,
+  MAP_ROUTE,
+  MAP_TRAIL,
   partialRoute,
   type MapViewProps,
 } from './mapTypes'
@@ -25,28 +29,34 @@ const EDGE_PADDING: [number, number] = [48, 48]
 
 const iconCache = new Map<string, L.DivIcon>()
 
-/** 앱의 EmojiPin과 같은 모양: 흰 원, 코랄 테두리(선택하면 진한 테두리) */
-function pinIcon(emoji: string, size: number, selected = false, border = colors.coralDeep) {
-  const key = `${emoji}-${size}-${selected}-${border}`
+/** 앱의 Pin과 같은 모양: 파란 원, 흰 테두리, 흰 글자(선택하면 진한 파랑·조금 크게) */
+function pinIcon(label: string, size: number, active = false) {
+  const key = `${label}-${size}-${active}`
   let icon = iconCache.get(key)
   if (!icon) {
-    const borderWidth = selected ? 3 : 2
-    const borderColor = selected ? colors.ink : border
+    const d = active ? size + 6 : size
     icon = L.divIcon({
       className: 'wt-pin',
-      html: `<div class="wt-pin-face" style="width:${size}px;height:${size}px;border:${borderWidth}px solid ${borderColor};font-size:${size * 0.5}px">${emoji}</div>`,
-      iconSize: [size, size],
-      iconAnchor: [size / 2, size / 2],
+      html: `<div class="wt-pin-face" style="width:${d}px;height:${d}px;border:3px solid #fff;background:${active ? MAP_PIN_ACTIVE : MAP_PIN};color:#fff;font-size:11px;font-weight:700;box-shadow:0 2px 7px rgba(0,0,0,.13)">${label}</div>`,
+      iconSize: [d, d],
+      iconAnchor: [d / 2, d / 2],
     })
     iconCache.set(key, icon)
   }
   return icon
 }
 
+const walkerIcon = L.divIcon({
+  className: 'wt-pin',
+  html: `<div class="wt-pin-face" style="width:38px;height:38px;border:3px solid ${MAP_PIN_ACTIVE};font-size:18px">🚶</div>`,
+  iconSize: [38, 38],
+  iconAnchor: [19, 19],
+})
+
 /** 앱과 같은 두고 온 곳 표시: 화면 기준 고정 크기 분홍 원 */
 const lostIcon = L.divIcon({
   className: 'wt-pin',
-  html: `<div style="box-sizing:border-box;width:${LOST_MARK_SIZE}px;height:${LOST_MARK_SIZE}px;border-radius:9999px;background:${LOST_MARK_FILL};border:${LOST_MARK_BORDER_WIDTH}px solid ${colors.roseDeep}"></div>`,
+  html: `<div style="box-sizing:border-box;width:${LOST_MARK_SIZE}px;height:${LOST_MARK_SIZE}px;border-radius:9999px;background:${LOST_MARK_FILL};border:${LOST_MARK_BORDER_WIDTH}px solid ${LOST_MARK_BORDER}"></div>`,
   iconSize: [LOST_MARK_SIZE, LOST_MARK_SIZE],
   iconAnchor: [LOST_MARK_SIZE / 2, LOST_MARK_SIZE / 2],
 })
@@ -71,6 +81,7 @@ export default function MapView({
   lostMarks = [],
   selectedPlace,
   onSelectPlace,
+  pinLabels,
   height = 340,
 }: MapViewProps) {
   const line = useMemo(() => path.map((p) => [p.lat, p.lng] as [number, number]), [path])
@@ -81,9 +92,10 @@ export default function MapView({
       ...line,
       ...stays.map((s) => [s.lat, s.lng] as [number, number]),
       ...frequentPlaces.map((p) => [p.lat, p.lng] as [number, number]),
+      ...lostMarks.map((m) => [m.lat, m.lng] as [number, number]),
       ...(movingRoute ?? []).map((p) => [p.lat, p.lng] as [number, number]),
     ],
-    [line, stays, frequentPlaces, movingRoute],
+    [line, stays, frequentPlaces, lostMarks, movingRoute],
   )
 
   const moving = movingRoute && movingRoute.length > 1 ? partialRoute(movingRoute, movingProgress) : null
@@ -94,8 +106,8 @@ export default function MapView({
       className="wt-map"
       style={{
         height,
-        borderRadius: 24,
-        border: `1px solid ${colors.peach}`,
+        borderRadius: 14,
+        border: `1px solid ${colors.line}`,
         overflow: 'hidden',
         // Leaflet 내부 z-index가 배너·시트 위로 올라오지 않도록 쌓임 맥락을 가둔다
         isolation: 'isolate',
@@ -107,13 +119,13 @@ export default function MapView({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {line.length > 1 && <Polyline positions={line} pathOptions={{ color: colors.coralDeep, weight: 4, opacity: 1 }} />}
+        {line.length > 1 && <Polyline positions={line} pathOptions={{ color: MAP_ROUTE, weight: 4, opacity: 1 }} />}
 
-        {places.map(({ placeName, stay }) => (
+        {places.map(({ placeName, stay }, i) => (
           <Marker
             key={placeName}
             position={[stay.lat, stay.lng]}
-            icon={pinIcon(findPlaceAt(stay.lat, stay.lng)?.emoji ?? '📍', 36, selectedPlace === placeName)}
+            icon={pinIcon(pinLabels?.[placeName] ?? String(i + 1), 24, selectedPlace === placeName)}
             eventHandlers={{ click: () => onSelectPlace?.(placeName) }}
             title={placeName}
           />
@@ -123,11 +135,7 @@ export default function MapView({
           <Marker
             key={`freq-${p.placeName}`}
             position={[p.lat, p.lng]}
-            icon={pinIcon(
-              findPlaceAt(p.lat, p.lng)?.emoji ?? '📍',
-              30 + Math.round((p.visits / maxVisits) * 22),
-              selectedPlace === p.placeName,
-            )}
+            icon={pinIcon(String(p.visits), 22 + Math.round((p.visits / maxVisits) * 18), selectedPlace === p.placeName)}
             eventHandlers={{ click: () => onSelectPlace?.(p.placeName) }}
             title={p.placeName}
           />
@@ -148,11 +156,11 @@ export default function MapView({
           <>
             <Polyline
               positions={moving.trail.map((c) => [c.latitude, c.longitude] as [number, number])}
-              pathOptions={{ color: colors.roseDeep, weight: 5, dashArray: '2 8', lineCap: 'round' }}
+              pathOptions={{ color: MAP_TRAIL, weight: 5, dashArray: '2 8', lineCap: 'round' }}
             />
             <Marker
               position={[moving.position.latitude, moving.position.longitude]}
-              icon={pinIcon('🚶', 40)}
+              icon={walkerIcon}
               interactive={false}
               zIndexOffset={1000}
             />

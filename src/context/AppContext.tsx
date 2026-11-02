@@ -11,17 +11,38 @@ import {
   type SimMove,
   type SimState,
 } from '../data/routine'
+import { findLastCheck, placeKey } from '../lib/predict'
 import { alertEndpoints, alertMessage, detectStays, withSpots, type AlertEndpoints } from '../lib/stay'
 import type {
   ActivityEvent,
   CheckAlert,
   CheckStatus,
   Item,
+  ItemKind,
   LocationPoint,
   NearLoss,
   Spot,
   Stay,
 } from '../types'
+
+/** 물건의 지금 상태: 마지막 챙김 확인 결과 */
+export interface ItemStatus {
+  state: '챙김' | '두고옴' | '확인 전'
+  /** "연세대학교 · 도서관 3층 열람실" */
+  place: string | null
+  at: number | null
+  stayId: string | null
+  nearLossId: string | null
+}
+
+/** 재구매 지원 신청 (시연) */
+export interface Claim {
+  itemId: string
+  date: string
+  place: string
+  story: string
+  createdAt: number
+}
 
 export interface BannerState {
   id: number
@@ -43,10 +64,19 @@ interface AppContextValue {
   now: number
   /** 시뮬레이션 진행 위치 (todaySimulation.stops 기준) */
   sim: SimState
+  /** 분실 예방 알림(두고 오면 알려주기) 켜짐 여부 */
+  notify: boolean
+  toast: { id: number; message: string } | null
+  claim: Claim | null
 
   /** 알림이 가리키는 떠난 곳·새로 머무는 곳 */
   endpointsOf: (alert: CheckAlert) => AlertEndpoints | null
-  addItem: (name: string, emoji: string) => void
+  statusOf: (itemId: string) => ItemStatus
+  addItem: (name: string, kind: ItemKind) => void
+  setNotify: (on: boolean) => void
+  showToast: (message: string) => void
+  setClaim: (claim: Claim) => void
+  toggleProtected: (itemIds: string[]) => void
   removeItem: (itemId: string) => void
   /** 시뮬레이션 이동을 기록하고 챙김 확인 알림을 띄운다 */
   completeMove: (move: SimMove) => void
@@ -73,6 +103,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [openAlertId, setOpenAlertId] = useState<string | null>(null)
   const [now, setNow] = useState(todaySimulation.now)
   const [sim, setSim] = useState<SimState>({ stop: 0, spot: 0 })
+  const [notify, setNotify] = useState(true)
+  const [toast, setToast] = useState<{ id: number; message: string } | null>(null)
+  const [claim, setClaim] = useState<Claim | null>(null)
 
   const points = useMemo(() => [...historyPoints, ...extraPoints], [extraPoints])
   const events = useMemo(() => [...historyEvents, ...extraEvents], [extraEvents])
@@ -89,10 +122,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 
   const addItem = useCallback(
-    (name: string, emoji: string) => {
-      setItems((prev) => [...prev, { id: `item-${Date.now()}`, name, emoji, createdAt: now }])
+    (name: string, kind: ItemKind) => {
+      setItems((prev) => [...prev, { id: `item-${Date.now()}`, name, kind, createdAt: now, protected: false }])
     },
     [now],
+  )
+
+  /** 지원 대상 물건을 itemIds로 바꾼다 */
+  const toggleProtected = useCallback((itemIds: string[]) => {
+    setItems((prev) => prev.map((item) => ({ ...item, protected: itemIds.includes(item.id) })))
+  }, [])
+
+  const showToast = useCallback((message: string) => setToast({ id: Date.now(), message }), [])
+
+  // 아직 못 찾은 기록이 있으면 '두고옴', 아니면 마지막으로 챙긴 알림 기준 '챙김', 둘 다 없으면 '확인 전'
+  const statusOf = useCallback(
+    (itemId: string): ItemStatus => {
+      const lost = nearLosses
+        .filter((nl) => nl.itemId === itemId && nl.recoveredAt === null)
+        .sort((a, b) => b.detectedAt - a.detectedAt)[0]
+      if (lost) {
+        const stay = stayById.get(lost.stayId)
+        const spotName = lost.spotId ? (spotById.get(lost.spotId)?.name ?? null) : null
+        return {
+          state: '두고옴',
+          place: stay ? placeKey(stay.placeName, spotName) : null,
+          at: lost.detectedAt,
+          stayId: lost.stayId,
+          nearLossId: lost.id,
+        }
+      }
+      const check = findLastCheck(itemId, alerts)
+      const ends = check && alertEndpoints(check, stayById, spotById)
+      if (check && ends) {
+        return {
+          state: '챙김',
+          place: placeKey(ends.fromStay.placeName, ends.fromSpot?.name ?? null),
+          at: check.createdAt,
+          stayId: ends.fromStay.id,
+          nearLossId: null,
+        }
+      }
+      return { state: '확인 전', place: null, at: null, stayId: null, nearLossId: null }
+    },
+    [nearLosses, alerts, stayById, spotById],
   )
 
   const removeItem = useCallback((itemId: string) => {
@@ -125,9 +198,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSim((prev) =>
         move.trigger === '장소이동' ? { stop: prev.stop + 1, spot: 0 } : { ...prev, spot: prev.spot + 1 },
       )
-      setBanner({ id: Date.now(), message: alertMessage(move.trigger, fromLabel), alertId: alert.id })
+      // 분실 예방 알림을 꺼 두면 기록만 남기고 배너는 띄우지 않는다
+      if (notify) setBanner({ id: Date.now(), message: alertMessage(move.trigger, fromLabel), alertId: alert.id })
     },
-    [points, events, items],
+    [points, events, items, notify],
   )
 
   const respond = useCallback(
@@ -207,6 +281,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     openAlertId,
     now,
     sim,
+    notify,
+    toast,
+    claim,
+    statusOf,
+    setNotify,
+    showToast,
+    setClaim,
+    toggleProtected,
     endpointsOf,
     addItem,
     removeItem,

@@ -20,7 +20,7 @@ export default function MapView(props: MapViewProps) {
   }, [])
 
   if (!LeafletMap) {
-    return <View style={{ height: props.height ?? 340 }} className="rounded-3xl border border-peach bg-white" />
+    return <View style={{ height: props.height ?? 340 }} className="rounded-[14px] border border-line bg-surface" />
   }
   return <LeafletMap {...props} />
 }

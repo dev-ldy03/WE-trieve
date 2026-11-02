@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Text, View } from 'react-native'
 import RNMapView, { Marker, Polyline } from 'react-native-maps'
-import { findPlaceAt } from '@/data/places'
-import colors from '@/theme/colors.json'
 import {
   groupByPlace,
+  LOST_MARK_BORDER,
   LOST_MARK_BORDER_WIDTH,
   LOST_MARK_FILL,
   LOST_MARK_SIZE,
+  MAP_PIN,
+  MAP_PIN_ACTIVE,
+  MAP_ROUTE,
+  MAP_TRAIL,
   partialRoute,
   type MapViewProps,
 } from './mapTypes'
@@ -15,21 +18,23 @@ import {
 const SINCHON = { latitude: 37.5585, longitude: 126.9375, latitudeDelta: 0.014, longitudeDelta: 0.014 }
 const EDGE = { top: 48, right: 48, bottom: 48, left: 48 }
 
-function EmojiPin({ emoji, selected, size = 36 }: { emoji: string; selected?: boolean; size?: number }) {
+/** 레퍼런스 동선 지도의 번호 핀: 파란 원, 흰 테두리, 흰 글자 */
+function Pin({ label, active, size = 24 }: { label: string; active?: boolean; size?: number }) {
+  const d = active ? size + 6 : size
   return (
     <View
       style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        borderWidth: selected ? 3 : 2,
-        borderColor: selected ? colors.ink : colors.coralDeep,
-        backgroundColor: '#fff',
+        width: d,
+        height: d,
+        borderRadius: d / 2,
+        borderWidth: 3,
+        borderColor: '#fff',
+        backgroundColor: active ? MAP_PIN_ACTIVE : MAP_PIN,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Text style={{ fontSize: size * 0.5 }}>{emoji}</Text>
+      <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{label}</Text>
     </View>
   )
 }
@@ -43,6 +48,7 @@ export default function MapView({
   lostMarks = [],
   selectedPlace,
   onSelectPlace,
+  pinLabels,
   height = 340,
 }: MapViewProps) {
   const ref = useRef<RNMapView>(null)
@@ -55,9 +61,10 @@ export default function MapView({
       ...line,
       ...stays.map((s) => ({ latitude: s.lat, longitude: s.lng })),
       ...frequentPlaces.map((p) => ({ latitude: p.lat, longitude: p.lng })),
+      ...lostMarks.map((m) => ({ latitude: m.lat, longitude: m.lng })),
       ...(movingRoute ?? []).map((p) => ({ latitude: p.lat, longitude: p.lng })),
     ],
-    [line, stays, frequentPlaces, movingRoute],
+    [line, stays, frequentPlaces, lostMarks, movingRoute],
   )
   useEffect(() => {
     if (fitCoords.length === 0) return
@@ -69,18 +76,19 @@ export default function MapView({
   const maxVisits = Math.max(1, ...frequentPlaces.map((p) => p.visits))
 
   return (
-    <View style={{ height }} className="overflow-hidden rounded-3xl border border-peach">
+    <View style={{ height }} className="overflow-hidden rounded-[14px] border border-line">
       <RNMapView ref={ref} style={{ flex: 1 }} initialRegion={SINCHON} toolbarEnabled={false}>
-        {line.length > 1 && <Polyline coordinates={line} strokeColor={colors.coralDeep} strokeWidth={4} />}
+        {line.length > 1 && <Polyline coordinates={line} strokeColor={MAP_ROUTE} strokeWidth={4} />}
 
-        {places.map(({ placeName, stay }) => (
+        {places.map(({ placeName, stay }, i) => (
           <Marker
             key={placeName}
             coordinate={{ latitude: stay.lat, longitude: stay.lng }}
             onPress={() => onSelectPlace?.(placeName)}
             anchor={{ x: 0.5, y: 0.5 }}
+            title={placeName}
           >
-            <EmojiPin emoji={findPlaceAt(stay.lat, stay.lng)?.emoji ?? '📍'} selected={selectedPlace === placeName} />
+            <Pin label={pinLabels?.[placeName] ?? String(i + 1)} active={selectedPlace === placeName} />
           </Marker>
         ))}
 
@@ -90,12 +98,9 @@ export default function MapView({
             coordinate={{ latitude: p.lat, longitude: p.lng }}
             onPress={() => onSelectPlace?.(p.placeName)}
             anchor={{ x: 0.5, y: 0.5 }}
+            title={p.placeName}
           >
-            <EmojiPin
-              emoji={findPlaceAt(p.lat, p.lng)?.emoji ?? '📍'}
-              selected={selectedPlace === p.placeName}
-              size={30 + Math.round((p.visits / maxVisits) * 22)}
-            />
+            <Pin label={String(p.visits)} active={selectedPlace === p.placeName} size={22 + Math.round((p.visits / maxVisits) * 18)} />
           </Marker>
         ))}
 
@@ -114,7 +119,7 @@ export default function MapView({
                 borderRadius: LOST_MARK_SIZE / 2,
                 backgroundColor: LOST_MARK_FILL,
                 borderWidth: LOST_MARK_BORDER_WIDTH,
-                borderColor: colors.roseDeep,
+                borderColor: LOST_MARK_BORDER,
               }}
             />
           </Marker>
@@ -122,9 +127,11 @@ export default function MapView({
 
         {moving && (
           <>
-            <Polyline coordinates={moving.trail} strokeColor={colors.roseDeep} strokeWidth={5} lineDashPattern={[2, 8]} />
+            <Polyline coordinates={moving.trail} strokeColor={MAP_TRAIL} strokeWidth={5} lineDashPattern={[2, 8]} />
             <Marker coordinate={moving.position} anchor={{ x: 0.5, y: 0.5 }} zIndex={10}>
-              <EmojiPin emoji="🚶" size={40} />
+              <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: '#fff', borderWidth: 3, borderColor: MAP_PIN_ACTIVE, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 18 }}>🚶</Text>
+              </View>
             </Marker>
           </>
         )}

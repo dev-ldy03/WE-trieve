@@ -36,8 +36,10 @@ export type ItemKind = 'wallet' | 'buds' | 'keys' | 'charger'
 export interface Item {
   id: string
   name: string
-  emoji: string
+  kind: ItemKind
   createdAt: number
+  /** 재구매 지원 대상 */
+  protected: boolean
 }
 
 export type CheckStatus = '챙김' | '두고옴' | '미응답'
