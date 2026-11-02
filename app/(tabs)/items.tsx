@@ -48,7 +48,7 @@ export default function Items() {
             style={isLeftBehind ? { borderWidth: 2, borderColor: colors.rose } : undefined}
           >
             <Pressable
-              onPress={() => router.push({ pathname: '/items/[id]', params: { id: item.id } })}
+              onPress={() => router.push({ pathname: '/item/[id]', params: { id: item.id } })}
               className="flex-1 flex-row items-center gap-3 active:opacity-70"
             >
               <View className="h-12 w-12 items-center justify-center rounded-2xl bg-cream">

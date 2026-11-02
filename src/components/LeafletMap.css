@@ -1,0 +1,17 @@
+/* Leaflet divIcon 기본 흰 상자를 없애고, 앱과 같은 동그란 이모지 핀만 보이게 한다 */
+.wt-pin {
+  background: none;
+  border: none;
+}
+.wt-pin-face {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #fff;
+  line-height: 1;
+}
+.wt-map .leaflet-control-attribution {
+  font-size: 9px;
+}

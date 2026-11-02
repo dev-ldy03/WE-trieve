@@ -5,11 +5,17 @@ import Badge from '@/components/Badge'
 import Card from '@/components/Card'
 import Screen from '@/components/Screen'
 import { useApp } from '@/context/AppContext'
+import { initialItems } from '@/data/items'
 import { formatDate, formatDateTime, formatTime, josa } from '@/lib/format'
 import { findLastCheck, placeKey, predictLostPlace } from '@/lib/predict'
 import { checkMomentLabel } from '@/lib/stay'
 
 const DAY = 24 * 60 * 60 * 1000
+
+/** 웹 정적 빌드에서 기본 물건 상세 페이지를 미리 만든다 (앱에는 영향 없음) */
+export function generateStaticParams(): { id: string }[] {
+  return initialItems.map((item) => ({ id: item.id }))
+}
 
 export default function ItemDetail() {
   const { id } = useLocalSearchParams<{ id: string }>()

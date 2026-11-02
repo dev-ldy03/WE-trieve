@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { Text, useWindowDimensions, View } from 'react-native'
+import { Platform, Text, useWindowDimensions, View } from 'react-native'
 import { BarChart } from 'react-native-gifted-charts'
 import Card from '@/components/Card'
 import MapView from '@/components/MapView'
@@ -19,6 +19,7 @@ import {
 } from '@/lib/analytics'
 import { formatDistance, formatDuration } from '@/lib/format'
 import colors from '@/theme/colors.json'
+import { WEB_FRAME_WIDTH } from '@/theme/layout'
 
 const PERIOD_LABEL: Record<Period, string> = { day: '오늘', week: '최근 7일', month: '최근 30일' }
 const BAR_COLORS = [colors.coralDeep, colors.coral, '#f7b9a5', colors.peach, '#ffe4d1']
@@ -43,7 +44,8 @@ export default function MyPage() {
   const frequent = useMemo(() => (period === 'month' ? frequentPlaces(stays, range) : []), [period, stays, range])
 
   // 화면 좌우 여백(40) + 카드 안쪽 여백(32) + y축 눈금(30)을 뺀 그래프 폭에 막대 5개가 꼭 맞게
-  const chartWidth = Math.min(width, 480) - 40 - 32 - 30
+  // 웹은 430px 휴대폰 틀 안에 그린다
+  const chartWidth = Math.min(width, Platform.OS === 'web' ? WEB_FRAME_WIDTH : 480) - 40 - 32 - 30
   const barWidth = 28
   const edge = 10
   const barSpacing = Math.max(8, Math.floor((chartWidth - edge * 2 - barWidth * 5) / 4))
