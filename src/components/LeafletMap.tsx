@@ -25,6 +25,13 @@ import './LeafletMap.css'
  */
 
 const SINCHON: [number, number] = [37.5585, 126.9375]
+
+// OpenStreetMap 공식 서버는 출처(Referer)가 없는 요청을 막는데, Chrome은 파일(file://)로 연 페이지에서
+// 출처를 보내지 않는다. 공유용 HTML을 파일로 열었을 때는 출처 없이도 받아 주는 독일 OSM 서버를 쓴다.
+const TILE_URL =
+  typeof location !== 'undefined' && location.protocol === 'file:'
+    ? 'https://tile.openstreetmap.de/{z}/{x}/{y}.png'
+    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 const EDGE_PADDING: [number, number] = [48, 48]
 
 const iconCache = new Map<string, L.DivIcon>()
@@ -116,7 +123,7 @@ export default function MapView({
       <MapContainer center={SINCHON} zoom={15} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url={TILE_URL}
         />
 
         {line.length > 1 && <Polyline positions={line} pathOptions={{ color: MAP_ROUTE, weight: 4, opacity: 1 }} />}
