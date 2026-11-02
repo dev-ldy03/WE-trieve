@@ -18,16 +18,5 @@
   "warnSoft": "#faf2e6",
   "warnText": "#b48347",
   "dot": "#de8843",
-  "navInactive": "#97a09a",
-
-  "cream": "#fff8f0",
-  "peach": "#ffd8be",
-  "coral": "#f4a28c",
-  "coralDeep": "#e07a5f",
-  "mint": "#bfe8d4",
-  "mintDeep": "#3f9b74",
-  "rose": "#ffd1d6",
-  "roseDeep": "#d35f6f",
-  "butter": "#fff1c1",
-  "inkSoft": "#8a7c75"
+  "navInactive": "#97a09a"
 }

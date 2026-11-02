@@ -14,7 +14,7 @@ interface PeriodToggleProps {
 
 export default function PeriodToggle({ value, onChange }: PeriodToggleProps) {
   return (
-    <View className="flex-row rounded-full bg-peach/60 p-1" accessibilityRole="tablist">
+    <View className="flex-row rounded-[10px] bg-surface p-1" accessibilityRole="tablist">
       {options.map((opt) => {
         const selected = value === opt.value
         return (
@@ -23,9 +23,9 @@ export default function PeriodToggle({ value, onChange }: PeriodToggleProps) {
             onPress={() => onChange(opt.value)}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
-            className={`flex-1 items-center rounded-full py-2 ${selected ? 'bg-white' : ''}`}
+            className={`flex-1 items-center rounded-[8px] py-2 ${selected ? 'bg-paper' : ''}`}
           >
-            <Text className={`text-sm ${selected ? 'font-semibold text-coral-deep' : 'text-ink-soft'}`}>
+            <Text className={`text-sm ${selected ? 'font-semibold text-accent' : 'text-muted'}`}>
               {opt.label}
             </Text>
           </Pressable>
