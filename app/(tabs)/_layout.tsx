@@ -11,6 +11,9 @@ const tabs: { name: string; title: string; icon: IconName }[] = [
   { name: 'my', title: '마이', icon: 'user' },
 ]
 
+// 버튼과 그 자리(폭)까지 없애야 나머지 4개 탭이 고르게 나뉜다
+const hiddenTab = { tabBarButton: () => null, tabBarItemStyle: { display: 'none' as const } }
+
 export default function TabLayout() {
   const insets = useSafeAreaInsets()
   return (
@@ -49,8 +52,8 @@ export default function TabLayout() {
       ))}
       {/* 탭 버튼 없이 탭 바를 유지한 채 여는 화면 (레퍼런스처럼 하단 메뉴가 계속 보인다).
           SDK 58의 href: null은 화면 자체를 막아 버리므로, 버튼만 숨긴다. */}
-      <Tabs.Screen name="alerts" options={{ tabBarButton: () => null }} />
-      <Tabs.Screen name="item/[id]" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen name="alerts" options={hiddenTab} />
+      <Tabs.Screen name="item/[id]" options={hiddenTab} />
     </Tabs>
   )
 }
