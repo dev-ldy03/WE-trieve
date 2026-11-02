@@ -9,7 +9,7 @@ const tabs = [
 
 export default function TabBar() {
   return (
-    <nav className="fixed bottom-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 border-t border-peach bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+    <nav className="fixed bottom-0 left-1/2 z-[900] w-full max-w-[430px] -translate-x-1/2 border-t border-peach bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <ul className="flex">
         {tabs.map((tab) => (
           <li key={tab.to} className="flex-1">

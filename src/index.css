@@ -41,3 +41,23 @@
 body {
   @apply bg-peach/40 font-sans text-ink antialiased;
 }
+
+/* Leaflet 팝업을 앱 톤에 맞춘다 */
+.leaflet-container {
+  font-family: var(--font-sans);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 16px;
+  color: var(--color-ink);
+  box-shadow: 0 4px 16px rgb(224 122 95 / 0.18);
+}
+.leaflet-popup-content {
+  margin: 12px 14px;
+}
+.leaflet-container .leaflet-popup-content p {
+  margin: 0;
+}
+.stay-marker {
+  background: none;
+  border: none;
+}
