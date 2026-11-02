@@ -23,13 +23,13 @@ export default function BottomSheet({ open, title, onClose, children }: BottomSh
     <RNModal visible={open} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       <View className="flex-1 justify-end bg-ink/30">
         <Pressable className="absolute inset-0" onPress={onClose} accessibilityLabel="닫기" />
-        <Animated.View
-          style={{ transform: [{ translateY }], maxHeight: '88%', paddingBottom: insets.bottom + 20 }}
-          className="rounded-t-3xl bg-cream px-5 pt-3"
-        >
-          <View className="mb-4 h-1.5 w-10 self-center rounded-full bg-peach" />
-          <Text className="mb-4 text-lg font-bold leading-7 text-ink">{title}</Text>
-          <ScrollView showsVerticalScrollIndicator={false}>{children}</ScrollView>
+        {/* NativeWind className은 Animated.View에 적용되지 않으므로 스타일은 안쪽 View에 둔다 */}
+        <Animated.View style={{ transform: [{ translateY }], maxHeight: '88%' }}>
+          <View className="rounded-t-3xl bg-cream px-5 pt-3" style={{ paddingBottom: insets.bottom + 20 }}>
+            <View className="mb-4 h-1.5 w-10 self-center rounded-full bg-peach" />
+            <Text className="mb-4 text-lg font-bold leading-7 text-ink">{title}</Text>
+            <ScrollView showsVerticalScrollIndicator={false}>{children}</ScrollView>
+          </View>
         </Animated.View>
       </View>
     </RNModal>

@@ -1,17 +1,26 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import Card from '@/components/Card'
 import MapView from '@/components/MapView'
 import type { LostMark } from '@/components/mapTypes'
 import Screen from '@/components/Screen'
 import { useApp } from '@/context/AppContext'
-import { HISTORY_DAYS } from '@/data/routine'
+import {
+  buildPlaceMove,
+  buildSpotMove,
+  HISTORY_DAYS,
+  nextPlaceName,
+  nextSpotName,
+  type SimMove,
+} from '@/data/routine'
 import { pathDistance } from '@/lib/distance'
-import { formatDate, formatDistance, formatDuration, formatTime, startOfDay } from '@/lib/format'
+import { formatDate, formatDistance, formatDuration, formatTime, josa, startOfDay } from '@/lib/format'
 import { placeKey } from '@/lib/predict'
 import type { Stay } from '@/types'
 
 const DAY = 24 * 60 * 60 * 1000
+const WALK_ANIMATION_MS = 3000
+const SPOT_MOVE_MS = 1200
 
 interface LostEntry {
   nearLossId: string
@@ -21,7 +30,10 @@ interface LostEntry {
 }
 
 export default function MapHome() {
-  const { points, stays, now, items, nearLosses, stayById, spotById, markRecovered } = useApp()
+  const { points, stays, now, sim, items, nearLosses, stayById, spotById, markRecovered, completeMove } =
+    useApp()
+  const [move, setMove] = useState<SimMove | null>(null)
+  const [progress, setProgress] = useState(0)
   const today = startOfDay(now)
   const firstDay = today - (HISTORY_DAYS - 1) * DAY
   const [selectedDay, setSelectedDay] = useState(today)
@@ -60,6 +72,43 @@ export default function MapHome() {
     }
     return [...marks.values()]
   }, [lostEntries])
+
+  const nextPlace = nextPlaceName(sim)
+  const nextSpot = nextSpotName(sim)
+
+  const startMove = (built: SimMove | null) => {
+    if (!built) return
+    setSelectedDay(today)
+    setPicked(undefined)
+    setProgress(0)
+    setMove(built)
+  }
+
+  // 장소 이동은 경로를 따라 걷는 애니메이션을, 자리 이동은 잠깐 기다린 뒤 기록한다
+  useEffect(() => {
+    if (!move) return
+    if (move.trigger === '자리이동') {
+      const timer = setTimeout(() => {
+        completeMove(move)
+        setMove(null)
+      }, SPOT_MOVE_MS)
+      return () => clearTimeout(timer)
+    }
+    let frame = 0
+    const startedAt = Date.now()
+    const tick = () => {
+      const p = Math.min(1, (Date.now() - startedAt) / WALK_ANIMATION_MS)
+      setProgress(p)
+      if (p < 1) {
+        frame = requestAnimationFrame(tick)
+      } else {
+        completeMove(move)
+        setMove(null)
+      }
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [move, completeMove])
 
   const moveDay = (offset: number) => {
     setSelectedDay((d) => Math.min(today, Math.max(firstDay, d + offset * DAY)))
@@ -121,9 +170,39 @@ export default function MapHome() {
         path={dayPoints}
         stays={dayStays}
         lostMarks={lostMarks}
+        movingRoute={move?.trigger === '장소이동' ? move.walk : undefined}
+        movingProgress={progress}
         selectedPlace={selectedPlace}
         onSelectPlace={setPicked}
       />
+
+      <View className="gap-2">
+        <SimButton
+          primary
+          label={
+            move?.trigger === '장소이동'
+              ? `${josa(move.toLabel, '으로/로')} 이동 중이에요…`
+              : nextPlace
+                ? '🚶 다른 장소로 이동'
+                : '오늘 일정은 여기까지예요. 푹 쉬어요 🌙'
+          }
+          hint={nextPlace && !move ? `다음 장소: ${nextPlace}` : undefined}
+          disabled={!nextPlace || move !== null}
+          onPress={() => startMove(buildPlaceMove(sim, now))}
+        />
+        <SimButton
+          label={
+            move?.trigger === '자리이동'
+              ? `${josa(move.toLabel, '으로/로')} 자리를 옮기는 중…`
+              : nextSpot
+                ? '🪑 자리에서 일어나기'
+                : '여기서는 옮길 자리가 없어요'
+          }
+          hint={nextSpot && !move ? `다음 자리: ${nextSpot}` : undefined}
+          disabled={!nextSpot || move !== null}
+          onPress={() => startMove(buildSpotMove(sim, now))}
+        />
+      </View>
 
       {selectedPlace ? (
         <PlaceDetail
@@ -136,6 +215,33 @@ export default function MapHome() {
         <Text className="text-center text-xs text-ink-soft">마커를 누르면 머문 시간과 자리를 볼 수 있어요</Text>
       )}
     </Screen>
+  )
+}
+
+interface SimButtonProps {
+  label: string
+  hint?: string
+  disabled: boolean
+  primary?: boolean
+  onPress: () => void
+}
+
+function SimButton({ label, hint, disabled, primary, onPress }: SimButtonProps) {
+  const tone = disabled ? 'bg-peach' : primary ? 'bg-coral-deep' : 'bg-white border border-coral-deep'
+  const text = disabled ? 'text-ink-soft' : primary ? 'text-white' : 'text-coral-deep'
+  return (
+    <View>
+      <Pressable
+        onPress={onPress}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityState={{ disabled }}
+        className={`items-center rounded-full py-3.5 active:opacity-80 ${tone}`}
+      >
+        <Text className={`font-semibold ${text}`}>{label}</Text>
+      </Pressable>
+      {hint && <Text className="mt-1 text-center text-xs text-ink-soft">{hint}</Text>}
+    </View>
   )
 }
 

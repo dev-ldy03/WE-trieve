@@ -29,7 +29,7 @@ export default function CheckSheet() {
 
   return (
     <BottomSheet open title={alertMessage(alert.trigger, ends.fromLabel)} onClose={closeSheet}>
-      <Text className="-mt-2 mb-4 text-xs text-ink-soft">
+      <Text className="mb-4 text-xs text-ink-soft">
         {formatDateTime(alert.createdAt)} · {arrival}
       </Text>
 
