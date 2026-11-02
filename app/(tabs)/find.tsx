@@ -4,6 +4,8 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import BottomSheet from '@/components/BottomSheet'
 import Button from '@/components/Button'
 import Chip from '@/components/find/Chip'
+import ContactView from '@/components/find/ContactView'
+import OnlineView from '@/components/find/OnlineView'
 import RouteView from '@/components/find/RouteView'
 import { hm, type SearchCase, type Stop } from '@/components/find/types'
 import Icon from '@/components/Icon'
@@ -117,7 +119,8 @@ export default function Find() {
         ))}
       </View>
 
-      {tab === 'route' ? (
+      {/* 세 화면을 모두 띄워 두고 보이는 것만 바꿔, 탭을 오가도 확인·저장 기록이 남게 한다 */}
+      <View style={{ display: tab === 'route' ? 'flex' : 'none' }}>
         <RouteView
           item={item}
           stops={stops}
@@ -134,9 +137,24 @@ export default function Find() {
           }}
           onOnline={() => setTab('online')}
         />
-      ) : (
-        <Text className="py-9 text-center text-muted">준비 중이에요.</Text>
-      )}
+      </View>
+      <View style={{ display: tab === 'online' ? 'flex' : 'none' }}>
+        <OnlineView
+          item={item}
+          searchCase={searchCase}
+          onContact={() => setTab('contact')}
+          onContactPlace={(name) => {
+            const i = stops.findIndex((s) => s.placeName === name)
+            if (i < 0) return false
+            setPlaceIndex(i)
+            setTab('contact')
+            return true
+          }}
+        />
+      </View>
+      <View style={{ display: tab === 'contact' ? 'flex' : 'none' }}>
+        <ContactView item={item} searchCase={searchCase} stops={stops} index={safeIndex} setIndex={setPlaceIndex} />
+      </View>
 
       <CaseSheet
         open={editing}
