@@ -17,7 +17,7 @@ export default function Root({ children }: PropsWithChildren) {
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
         <title>{TITLE}</title>
         <meta name="description" content={DESCRIPTION} />
         <meta property="og:type" content="website" />
@@ -29,7 +29,12 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="twitter:description" content={DESCRIPTION} />
         <meta name="theme-color" content={colors.paper} />
         <ScrollViewStyleReset />
-        <style dangerouslySetInnerHTML={{ __html: `body{background-color:${colors.backdrop}}` }} />
+        {/* 모바일 브라우저는 주소창 때문에 height:100%가 실제 보이는 화면보다 짧을 수 있어 dvh를 쓴다 */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `body{background-color:${colors.backdrop}}html,body,#root{height:100vh;height:100dvh}`,
+          }}
+        />
         {headNodes}
       </head>
       <body {...bodyAttributes}>
