@@ -7,11 +7,12 @@ import colors from '@/theme/colors.json'
 const tabs: { name: string; title: string; icon: IconName }[] = [
   { name: 'index', title: '홈', icon: 'home' },
   { name: 'find', title: '찾기', icon: 'search' },
+  { name: 'community', title: '커뮤니티', icon: 'people' },
   { name: 'support', title: '재구매 지원', icon: 'shield' },
   { name: 'my', title: '마이', icon: 'user' },
 ]
 
-// 버튼과 그 자리(폭)까지 없애야 나머지 4개 탭이 고르게 나뉜다
+// 버튼과 그 자리(폭)까지 없애야 나머지 5개 탭이 고르게 나뉜다
 const hiddenTab = { tabBarButton: () => null, tabBarItemStyle: { display: 'none' as const } }
 
 export default function TabLayout() {

@@ -80,3 +80,8 @@ export function timeAgo(ts: number, now: number): string {
   const days = Math.round((startOfDay(now) - startOfDay(ts)) / 86400000)
   return days === 1 ? '어제' : `${days}일 전`
 }
+
+/** 249000 → '249,000원' */
+export function formatWon(won: number): string {
+  return `${String(Math.round(won)).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}원`
+}
