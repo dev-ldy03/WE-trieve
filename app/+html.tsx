@@ -2,7 +2,7 @@ import { ScrollViewStyleReset, useServerDocumentContext } from 'expo-router/html
 import type { PropsWithChildren } from 'react'
 import colors from '@/theme/colors.json'
 
-const TITLE = 'Wetriever · 내 물건, 내 곁에'
+const TITLE = 'WEtriever · 내 물건, 내 곁에'
 const DESCRIPTION = '두고 오지 않게, 우리가 같이 챙길게요. 자리를 옮길 때마다 소지품을 챙겼는지 알려 주고, 잃어버리면 동선을 되짚어 찾아 드려요.'
 
 /**
@@ -21,7 +21,7 @@ export default function Root({ children }: PropsWithChildren) {
         <title>{TITLE}</title>
         <meta name="description" content={DESCRIPTION} />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Wetriever" />
+        <meta property="og:site_name" content="WEtriever" />
         <meta property="og:title" content={TITLE} />
         <meta property="og:description" content={DESCRIPTION} />
         <meta name="twitter:card" content="summary" />

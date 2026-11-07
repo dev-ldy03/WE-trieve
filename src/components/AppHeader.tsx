@@ -21,7 +21,7 @@ export default function AppHeader() {
       style={{ paddingTop: insets.top + 20 }}
     >
       <Text className="text-ink" style={{ fontSize: 24, fontWeight: '800', letterSpacing: -1 }}>
-        Wetriever
+        WEtriever
       </Text>
       <Pressable
         onPress={() => router.push('/alerts')}

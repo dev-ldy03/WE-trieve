@@ -55,7 +55,7 @@ export default function My() {
 
   return (
     <Screen>
-      <Title title="나의 Wetriever" sub="물건, 알림, 지원 내역을 관리하세요." />
+      <Title title="나의 WEtriever" sub="물건, 알림, 지원 내역을 관리하세요." />
 
       <Card className="mt-4 flex-row items-center gap-3">
         <View className="h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-accent-soft">
